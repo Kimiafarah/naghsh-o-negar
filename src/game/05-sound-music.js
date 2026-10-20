@@ -24,7 +24,7 @@ const MODES=[[0,150,300,500,700,800,1000,1200],[0,150,400,500,700,800,1000,1200]
   [0,150,400,500,650,900,1100,1200],[0,200,300,500,700,850,1000,1200],[0,200,400,500,700,900,1050,1200]];
 const MEL=[[0,2],[1,1],[2,1],[1,2],[0,2],[2,1],[3,1],[4,2],[3,1],[2,1],[1,2],[0,4],[4,2],[5,1],[4,1],[3,2],[2,1],[1,1],[2,2],[1,1],[0,1],[0,4]];
 const NEY=[4,5,4,3,2,1,2,0];
-const OST=[0,4,7,4,2,4,6,4],SHIM=[7,9,11,9,8,10,12,10],CMEL=MEL.map(m=>m[0]);
+const DROPS=[0,2,4,7,9,11],SHIM=[7,9,11,9,8,10,12,10],CMEL=MEL.map(m=>m[0]);
 const MUS={on:false,li:-1,step:0,next:0,mel:0,melLeft:0,ney:0,deg:[],drone:null,timer:null,shimmer:0,coinN:0};
 let noiseBuf=null;
 function musFreq(d){const m=MUS.deg;const o=Math.floor(d/7);return 146.83*Math.pow(2,(m[((d%7)+7)%7]/1200)+o)}
@@ -48,30 +48,38 @@ function birdChirp(t,vol=.028){if(!MUS.out)return;for(const k of [0,.11]){const 
   g.gain.setValueAtTime(0,t+k);g.gain.linearRampToValueAtTime(vol,t+k+.01);g.gain.exponentialRampToValueAtTime(.0001,t+k+.09);o.connect(g).connect(MUS.out);o.start(t+k);o.stop(t+k+.1)}}
 function musicStart(li){
   li=Math.max(0,li);if(!ac)return;if(MUS.on&&MUS.li===li)return;MUS.li=li;MUS.deg=MODES[li%MODES.length];SHUR=[0,1,2,3,4,5,6,7].map(d=>musFreq(d+7));
-  if(!MUS.out){MUS.out=ac.createGain();MUS.out.connect(ac.destination)}
+  if(!MUS.out){MUS.out=ac.createGain();MUS.out.connect(ac.destination);
+    // a soft courtyard reverb so every note hangs in the air a little
+    const len=Math.round(ac.sampleRate*3.4),ir=ac.createBuffer(2,len,ac.sampleRate);
+    for(let c=0;c<2;c++){const d=ir.getChannelData(c);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,3.2)}
+    const cv=ac.createConvolver();cv.buffer=ir;const wet=ac.createGain();wet.gain.value=.38;MUS.out.connect(cv).connect(wet).connect(ac.destination)}
   MUS.out.gain.setValueAtTime(muted?0:.9,ac.currentTime);
   if(MUS.drone)for(const o of MUS.drone)try{o.stop()}catch(e){}
-  MUS.drone=[];const dg=ac.createGain();dg.gain.value=.022;dg.connect(MUS.out);
-  for(const f of [musFreq(0)/2,musFreq(4)/2]){const o=ac.createOscillator();o.type='sine';o.frequency.value=f;o.connect(dg);o.start();MUS.drone.push(o)}
-  MUS.step=0;MUS.mel=0;MUS.melLeft=0;MUS.ney=0;MUS.next=ac.currentTime+.2;MUS.on=true;
+  // the drone breathes: tonic, fifth and octave, low-passed, each swelling on its own slow cycle
+  MUS.drone=[];const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=520;lp.Q.value=.3;lp.connect(MUS.out);
+  [[musFreq(0)/2,.016,.071],[musFreq(4)/2,.010,.093],[musFreq(0),.008,.057],[musFreq(2),.004,.113]].forEach(([f,v,rate],i)=>{
+    const g=ac.createGain();g.gain.value=v;g.connect(lp);const lfo=ac.createOscillator(),lg=ac.createGain();lfo.frequency.value=rate;lg.gain.value=v*.7;lfo.connect(lg).connect(g.gain);lfo.start();MUS.drone.push(lfo);
+    for(const det of [-4,4]){const o=ac.createOscillator();o.type=i?'sine':'triangle';o.frequency.value=f;o.detune.value=det;o.connect(g);o.start();MUS.drone.push(o)}});
+  MUS.step=0;MUS.mel=0;MUS.melLeft=0;MUS.ney=0;MUS.drop=4;MUS.next=ac.currentTime+.2;MUS.on=true;
   if(!MUS.timer)MUS.timer=setInterval(musicTick,90);
 }
 function musicTick(){
   if(!MUS.on||!ac)return;const beat=.3,menu=G.mode==='menu'||G.mode==='card',layers=menu?0:G.shardsGot;
   if(MUS.next<ac.currentTime-.05)MUS.next=ac.currentTime+.05; // the tab slept, or audio was just allowed
-  const pulse=!menu&&layers<2&&G.levelGold>=3,danger=!menu&&G.danger&&G.mode==='play',birds=!menu&&G.crowdT&&G.crowdT[2]!==undefined;
+  const danger=!menu&&G.danger&&G.mode==='play',birds=!menu&&G.crowdT&&G.crowdT[2]!==undefined;
   while(MUS.next<ac.currentTime+.35){const t=MUS.next,s=MUS.step;
-    // the santur hums from the very first second (title screen included); it steps back once the tar arrives
-    if(layers===0){if(s%2===0)santur(musFreq(OST[(s/2|0)%8]),t,menu?.028:.034)}else if(s%4===0)santur(musFreq(OST[(s/4|0)%8]),t,.018);
+    // no steady pulse: single santur notes fall now and then, like drops into a pool, each with a faint echo
+    if(s>=MUS.drop){const d=DROPS[Math.random()*DROPS.length|0]+(Math.random()<.35?7:0),v=layers?.016:menu?.026:.03;
+      santur(musFreq(d),t,v);santur(musFreq(d),t+.46,v*.3);if(Math.random()<.3)santur(musFreq(d+2),t+.9,v*.6);
+      MUS.drop=s+(layers?11:5)+(Math.random()*(layers?9:8)|0)}
     if(menu&&s%32===8){neyTone(musFreq(NEY[MUS.ney%NEY.length]+7)/2,t,beat*12);MUS.ney++}
-    if(pulse){if(s%8===0)dum(t,.15);else if(s%8===4)tek(t,false,.045)}            // a little gold wakes the tombak
-    if(danger){tek(t,true,.028);if(s%2===0)dum(t,.08)}                            // near a guard: the heartbeat quickens
+    if(danger&&s%4===0)dum(t,.07);                                                // near a guard: a slow, low heartbeat
     if(t<MUS.shimmer){const k=Math.min(1,(MUS.shimmer-t)/8);santur(musFreq(SHIM[s%8]+7),t,.008+.026*k)} // a gift vase rings bells
     if(birds&&(s%24===12||s%24===15))birdChirp(t);
     if(layers>=1){if(MUS.melLeft<=0){const [d,l]=MEL[MUS.mel%MEL.length];MUS.mel++;MUS.melLeft=l;MUS.cur=d;
-        if(l>=2){for(let k=0;k<l*2;k++)musPluck(musFreq(d),t+k*beat/2,.045,.3)}else musPluck(musFreq(d),t,.08,.9)}
+        musPluck(musFreq(d),t,.06,1.4*Math.max(1,l*.7));if(l>=2)musPluck(musFreq(d),t+beat,.025,.9)}
       MUS.melLeft--}
-    if(layers>=2){const p=['D','','T','T','D','','T','j'][s%8];if(p==='D')dum(t);else if(p==='T')tek(t,false);else if(p==='j')tek(t,true)}
+    if(layers>=2){const p=s%16;if(p===0)dum(t,.13);else if(p===6)dum(t,.08);else if(p===10)tek(t,true,.022)}   // the daf, played softly by hand
     if(layers>=3&&s%16===0){neyTone(musFreq(NEY[MUS.ney%NEY.length]+7)/2,t,beat*10);MUS.ney++}
     MUS.next+=beat;MUS.step++}
 }
