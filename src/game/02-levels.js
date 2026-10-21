@@ -15,27 +15,25 @@ const SPIRAL=(()=>{const ring=[[-1,-1],[0,-1],[1,-1],[2,-1],[2,0],[2,1],[2,2],[1
 
 const LEVELS=[
 {
-  num:'I',name:'The Courtyard',palette:'ch1',wall:'wall_teal',line:'Follow {guide}.',tip:'Tap to walk.',
+  /* The vertical slice. One idea only: find three shards and the gate opens.
+     A single line of cubes with a rill beside it; orange trees and cypresses in turn;
+     the second shard is tucked between the trees, out of sight from the road. */
+  num:'I',name:'The Orange Walk',palette:'ch1',wall:'wall_teal',line:'Follow {guide}.',tip:'Tap to walk.',
   build(put,fill){
-    fill(1,2,-1,0,1,2,'block');fill(1,2,0,0,1,2,'block',{f:'band'});put(2,-1,2,'arch');
-    put(0,0,1,'block');put(0,1,1,'stair',{r:1});
-    fill(-1,-1,-1,1,0,1,'block');fill(-1,-1,1,1,0,1,'block',{f:'band'});
-    put(-1,1,-1,'block');put(-1,2,-1,'stair',{r:0});
-    fill(-1,0,1,2,-2,-2,'block');fill(-1,0,2,2,-2,-2,'block',{f:'band'});
-    fill(-2,-2,3,4,-4,-3,'block');fill(-2,-2,4,4,-4,-3,'block',{f:'band'});
-    put(-3,4,-4,'block');put(-3,5,-4,'stair',{r:1});
-    fill(-4,-4,4,5,-5,-4,'block');fill(-4,-4,5,5,-5,-4,'block',{f:'band'});
-    put(-4,6,-5,'gate',{r:0,f:'band'});
-    put(-3,1,-2,'tower');put(-3,2,-2,'tower');put(-3,3,-2,'dome');
-    put(3,0,1,'block');put(3,1,1,'guard2',{c:2,sc:1.3,ang:-.6});put(3,1.93,1,'cattop',{sc:.85,ang:.3});put(-5,4,-5,'block');put(-5,5,-5,'orange');
+    for(let z=0;z<=6;z++)put(2,0,z,'block');put(2,-1,0,'block');put(2,-1,3,'block');put(2,-2,3,'block');put(2,-1,6,'block');
+    for(let z=1;z<=5;z++)put(3,0,z,'rill');put(3,0,0,'block');put(3,0,6,'block');put(3,-1,0,'block');put(3,-1,6,'block');
+    for(let z=1;z<=5;z++)put(1,0,z,'block');put(1,-1,3,'block');
+    put(1,1,1,'orange');put(1,1,3,'cypress');put(1,1,5,'orange');
+    put(2,0,-1,'block');put(2,1,-1,'stair',{r:0});
+    fill(1,3,0,1,-3,-2,'block');put(2,-1,-2,'block');
+    put(2,2,-3,'gate',{r:0});put(1,2,-3,'cypress');put(3,2,-3,'cypress');
+    for(let z=-6;z<=-4;z++)put(2,1,z,'deck');put(2,0,-7,'block');put(2,1,-7,'block');put(2,-1,-7,'block');put(2,2,-7,'orange');
   },
-  start:[2,1,2],cat:[1,1,2],
-  coins:[[1,1,1],[2,1,1],[-1,2,0],[-1,3,-2],[-2,5,-3]],
-  shards:[[-1,2,1],[-2,5,-4],[-4,6,-4]],
-  gate:[-4,6,-5],gifts:[[1,1,2,'cat']],
-  movers:[{piece:'block',f:'',c:4,stops:[[-1,2,-3],[-1,4,-3]],mode:'rosette',speed:1.5,wait:0}],
-  rosettes:[{pos:[0,3,-2],target:['mover',0]}],
-  rotators:[],fallers:[],guards:[],
+  start:[2,1,6],cat:[2,1,5],
+  coins:[[2,1,4],[2,1,2],[1,1,2],[2,1,1],[3,1,0]],
+  shards:[[3,1,6],[1,1,4],[1,2,-2]],
+  gate:[2,2,-3],gifts:[[3,2,-2,'cat']],
+  movers:[],rosettes:[],rotators:[],fallers:[],guards:[],
 },
 {
   num:'II',name:'The Builders',palette:'ch2',wall:'wall_rose',fit:true,autoTurn:[1,1],line:'The tower is still being painted.',tip:'Pale stone falls.',
