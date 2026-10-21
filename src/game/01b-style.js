@@ -70,20 +70,20 @@ const CARD_TEX=new Set(Object.keys(TREE_CARDS).map(k=>'c_'+k));
 
 /* ---------- chapter palettes: 2–3 main colours + one accent, each wing its own ---------- */
 const PALS={
-  ch1:{sky:['#f4b3c8','#fdeee6'],ghost:'rgba(255,255,255,.3)',haze:'#fdeee6',lines:[1,.97,.95,.55],
-    top:{g0:'#fff6ee',g1:'#f8c9d4',r:6,mask:'hexline',ln:'#ffffff'},pz:{g0:'#cfc6f2',g1:'#f095b2',m1:'#e07c9f',m2:'#f2c45a',ln:'#ffe6ef'},px:{g0:'#b8d0f6',g1:'#6c7fe2',m1:'#5d6fd2',m2:'#f2c45a',ln:'#e4e9ff'},motif:{pz:'arch',px:'star'},water:{g0:'#9fe0ee',g1:'#5c9ee6',m1:'#effcff'}},
-  ch2:{sky:['#e7806c','#fde2c8'],ghost:'rgba(255,236,220,.32)',haze:'#fde2c8',lines:[1,.95,.88,.5],
-    top:{g0:'#fff4ea',g1:'#f6c7a6',r:6,mask:'hexline',ln:'#ffffff'},pz:{g0:'#fbd9c2',g1:'#c2452f',m1:'#e06a4e',m2:'#ffd27a',ln:'#ffe2cc'},px:{g0:'#fbd9c2',g1:'#2b8f8c',m1:'#3fb0a8',m2:'#ffd27a',ln:'#d8f4ef'},motif:{pz:'diaper',px:'diaper'},water:{g0:'#7fd0d8',g1:'#2b8fa8',m1:'#effcff'}},
-  ch3:{sky:['#0c1238','#3a2a6e'],ghost:'rgba(150,140,230,.15)',haze:'#2c2560',lines:[.89,.71,.28,.55],night:true,
-    top:{g0:'#4a63bf',g1:'#141b48',r:5,mask:'hexline',ln:'#c99a3b'},pz:{g0:'#241d58',g1:'#2f86c2',m1:'#e3b448',m2:'#ffe08a',ln:'#e3b448'},px:{g0:'#241d58',g1:'#1d9a9c',m1:'#e3b448',m2:'#ffe08a',ln:'#e3b448'},motif:{pz:'star',px:'stars'},water:{g0:'#2f5fb8',g1:'#0f2468',m1:'#ffd67a'}},
-  ch4:{sky:['#f2a531','#fde3bd'],ghost:'rgba(255,240,210,.38)',haze:'#fde3bd',lines:[1,.95,.85,.5],
-    top:{g0:'#e9fbf6',g1:'#6fc8bc',r:6.5,mask:'hexline',ln:'#ffffff'},pz:{g0:'#fbe1c0',g1:'#2c48b0',m1:'#5d7de6',m2:'#f2c45a',ln:'#f2c45a',mask:'diaper'},px:{g0:'#fbe1c0',g1:'#e0582a',m1:'#f39360',m2:'#ffe2a6',ln:'#f2c45a',mask:'diaper'},motif:{pz:'star',px:'arch'},water:{g0:'#5fb4e6',g1:'#1f4fa8',m1:'#d8f2ff'}},
-  ch5:{sky:['#5b3f9a','#f0c3d6'],ghost:'rgba(255,225,240,.22)',haze:'#efc6d8',lines:[1,.92,.96,.5],
-    top:{g0:'#fff0f6',g1:'#d9a8d6',r:5.5,mask:'hexline',ln:'#ffffff'},pz:{g0:'#f2cfe0',g1:'#4b2f8f',m1:'#7a5ac6',m2:'#f2c45a',ln:'#f6dcff'},px:{g0:'#f2cfe0',g1:'#d15a8a',m1:'#ef86ad',m2:'#f2c45a',ln:'#ffe1ec'},motif:{pz:'medal',px:'medal'},water:{g0:'#b9c6f6',g1:'#6c78d6',m1:'#ffffff'}},
-  ch6:{sky:['#df5f86','#fcd6c0'],ghost:'rgba(255,225,232,.3)',haze:'#fcd6c0',lines:[1,.93,.95,.5],
-    top:{g0:'#fff3ee',g1:'#f4b5c6',r:5,mask:'hexline',ln:'#fff4f6'},pz:{g0:'#f9d0c6',g1:'#8a2a6a',m1:'#b54a8e',m2:'#f2c45a',ln:'#ffd8e8'},px:{g0:'#f9d0c6',g1:'#38379a',m1:'#5b5ac6',m2:'#f2c45a',ln:'#dfe2ff'},motif:{pz:'medal',px:'arch'},water:{g0:'#b9c6f6',g1:'#6c78d6',m1:'#ffffff'}},
-  ch7:{sky:['#081a2e','#25466a'],ghost:'rgba(150,200,230,.14)',haze:'#1f3a5a',lines:[.9,.75,.35,.55],night:true,
-    top:{g0:'#3b6f9a',g1:'#10263e',r:5,mask:'hexline',ln:'#c99a3b'},pz:{g0:'#13283f',g1:'#3fa0b8',m1:'#e3b448',m2:'#ffe08a',ln:'#e3b448'},px:{g0:'#13283f',g1:'#c99a3b',m1:'#ffe08a',m2:'#ffffff',ln:'#fff0c0'},motif:{pz:'stars',px:'star'},water:{g0:'#3a7fc8',g1:'#0f2a58',m1:'#ffd67a'}},
+  ch1:{shade:'px',sky:['#f4b3c8','#fdeee6'],ghost:'rgba(255,255,255,.3)',haze:'#fdeee6',lines:[1,.97,.95,.55],
+    top:{g0:'#fff6ee',g1:'#f8c9d4',r:6,mask:'none',ln:'#ffffff'},pz:{g0:'#cfc6f2',g1:'#f095b2',m1:'#e07c9f',m2:'#f2c45a',ln:'#ffe6ef'},px:{g0:'#b8d0f6',g1:'#6c7fe2',m1:'#5d6fd2',m2:'#f2c45a',ln:'#e4e9ff'},motif:{pz:'arch',px:'star'},water:{g0:'#9fe0ee',g1:'#5c9ee6',m1:'#effcff'}},
+  ch2:{shade:'pz',sky:['#e7806c','#fde2c8'],ghost:'rgba(255,236,220,.32)',haze:'#fde2c8',lines:[1,.95,.88,.5],
+    top:{g0:'#fff4ea',g1:'#f6c7a6',r:6,mask:'none',ln:'#ffffff'},pz:{g0:'#fbd9c2',g1:'#c2452f',m1:'#e06a4e',m2:'#ffd27a',ln:'#ffe2cc'},px:{g0:'#fbd9c2',g1:'#2b8f8c',m1:'#3fb0a8',m2:'#ffd27a',ln:'#d8f4ef'},motif:{pz:'diaper',px:'diaper'},water:{g0:'#7fd0d8',g1:'#2b8fa8',m1:'#effcff'}},
+  ch3:{shade:'both',sky:['#0c1238','#3a2a6e'],ghost:'rgba(150,140,230,.15)',haze:'#2c2560',lines:[.89,.71,.28,.55],night:true,
+    top:{g0:'#4a63bf',g1:'#141b48',r:5,mask:'none',ln:'#c99a3b'},pz:{g0:'#241d58',g1:'#2f86c2',m1:'#e3b448',m2:'#ffe08a',ln:'#e3b448'},px:{g0:'#241d58',g1:'#1d9a9c',m1:'#e3b448',m2:'#ffe08a',ln:'#e3b448'},motif:{pz:'star',px:'stars'},water:{g0:'#2f5fb8',g1:'#0f2468',m1:'#ffd67a'}},
+  ch4:{shade:'px',sky:['#f2a531','#fde3bd'],ghost:'rgba(255,240,210,.38)',haze:'#fde3bd',lines:[1,.95,.85,.5],
+    top:{g0:'#e9fbf6',g1:'#6fc8bc',r:6.5,mask:'none',ln:'#ffffff'},pz:{g0:'#fbe1c0',g1:'#2c48b0',m1:'#5d7de6',m2:'#f2c45a',ln:'#f2c45a',mask:'diaper'},px:{g0:'#fbe1c0',g1:'#e0582a',m1:'#f39360',m2:'#ffe2a6',ln:'#f2c45a',mask:'diaper'},motif:{pz:'star',px:'arch'},water:{g0:'#5fb4e6',g1:'#1f4fa8',m1:'#d8f2ff'}},
+  ch5:{shade:'pz',sky:['#5b3f9a','#f0c3d6'],ghost:'rgba(255,225,240,.22)',haze:'#efc6d8',lines:[1,.92,.96,.5],
+    top:{g0:'#fff0f6',g1:'#d9a8d6',r:5.5,mask:'none',ln:'#ffffff'},pz:{g0:'#f2cfe0',g1:'#4b2f8f',m1:'#7a5ac6',m2:'#f2c45a',ln:'#f6dcff'},px:{g0:'#f2cfe0',g1:'#d15a8a',m1:'#ef86ad',m2:'#f2c45a',ln:'#ffe1ec'},motif:{pz:'medal',px:'medal'},water:{g0:'#b9c6f6',g1:'#6c78d6',m1:'#ffffff'}},
+  ch6:{shade:'pz',sky:['#df5f86','#fcd6c0'],ghost:'rgba(255,225,232,.3)',haze:'#fcd6c0',lines:[1,.93,.95,.5],
+    top:{g0:'#fff3ee',g1:'#f4b5c6',r:5,mask:'none',ln:'#fff4f6'},pz:{g0:'#f9d0c6',g1:'#8a2a6a',m1:'#b54a8e',m2:'#f2c45a',ln:'#ffd8e8'},px:{g0:'#f9d0c6',g1:'#38379a',m1:'#5b5ac6',m2:'#f2c45a',ln:'#dfe2ff'},motif:{pz:'medal',px:'arch'},water:{g0:'#b9c6f6',g1:'#6c78d6',m1:'#ffffff'}},
+  ch7:{shade:'both',sky:['#081a2e','#25466a'],ghost:'rgba(150,200,230,.14)',haze:'#1f3a5a',lines:[.9,.75,.35,.55],night:true,
+    top:{g0:'#3b6f9a',g1:'#10263e',r:5,mask:'none',ln:'#c99a3b'},pz:{g0:'#13283f',g1:'#3fa0b8',m1:'#e3b448',m2:'#ffe08a',ln:'#e3b448'},px:{g0:'#13283f',g1:'#c99a3b',m1:'#ffe08a',m2:'#ffffff',ln:'#fff0c0'},motif:{pz:'stars',px:'star'},water:{g0:'#3a7fc8',g1:'#0f2a58',m1:'#ffd67a'}},
 };
 const STYLE={};let STYLE_KEY='';
 function buildOneTexture(id){const d=TEXDEFS[id];const c=document.createElement('canvas');c.width=c.height=TS;const g=c.getContext('2d');d.color(g);const D=g.getImageData(0,0,TS,TS).data,out=new Uint8Array(TS*TS*4);
@@ -94,7 +94,10 @@ function styl(id,mask,s){if(!TEXDEFS[id]||TEXDEFS[id].mask_!==mask){TEXDEFS[id]=
 function applyStyle(key,bounds){const P=PALS[key]||PALS.ch1;const y0=bounds.min[1]-.5,y1=bounds.max[1]+.5,cx=(bounds.min[0]+bounds.max[0])/2,cz=(bounds.min[2]+bounds.max[2])/2;
   const gy=[y0,y1],side=s=>({...s,gy});
   styl('t_top',P.top.mask,{...P.top,mode:2,gc:[cx,0,cz],gy:[0,P.top.r],m1:P.top.ln,m2:P.top.ln});
-  for(const sd of ['pz','px']){const S=side(P[sd]);styl('t_'+sd,S.mask||'none',S);styl('t_'+sd+'B','band',S);styl('t_'+sd+'M',P.motif[sd],S)}
+  const dk=(h,k)=>{const c=hx(h),sh=P.night?[.06,.06,.2]:[.25,.18,.38];return '#'+c.map((v,i)=>Math.round(Math.max(0,Math.min(1,v*(1-k)+sh[i]*k*.55))*255).toString(16).padStart(2,'0')).join('')};
+  const shadeOf=sd=>P.shade==='both'?(sd==='px'?.34:.22):P.shade===sd?.3:0;
+  for(const sd of ['pz','px']){const k=shadeOf(sd),S0=side(P[sd]),S=k?{...S0,g0:dk(S0.g0,k),g1:dk(S0.g1,k),m1:S0.m1&&dk(S0.m1,k),m2:S0.m2&&dk(S0.m2,k*.6),ln:S0.ln&&dk(S0.ln,k*.5)}:S0;
+    styl('t_'+sd,S.mask||'none',S);styl('t_'+sd+'B','band',S);styl('t_'+sd+'M',P.motif[sd],S)}
   styl('t_water','water',{...P.water,gdir:[.7,0,.7],gy:[cx+cz-8,cx+cz+8]});
   styl('t_road','road',{mode:2,g0:P.top.g0,g1:P.top.g1,gc:[cx,0,cz],gy:[0,P.top.r],m1:P.pz.g1,m2:P.pz.g1,ln:P.px.g1});
   for(const id in TEXDEFS)if(TEXDEFS[id].dirty){R.addTexture(id,buildOneTexture(id));TEXDEFS[id].dirty=false}
