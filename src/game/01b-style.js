@@ -68,22 +68,26 @@ function cardGeoFor(w,h,T,el){const g=new Geo();const k=1/Math.cos(el)*.82,r=[Ma
 for(const [k,[fn,w,h]] of Object.entries(TREE_CARDS))PIECE_BY_ID['card_'+k]={id:'card_'+k,slot:6,geo:cardGeoFor(w,h,'c_'+k,Math.atan(1/Math.SQRT2))};
 const CARD_TEX=new Set(Object.keys(TREE_CARDS).map(k=>'c_'+k));
 
-/* ---------- chapter palettes: 2–3 main colours + one accent, each wing its own ---------- */
+/* ---------- chapter palettes, built from colour harmony ----------
+   Each chapter names a base hue, how its partner hue relates (analogous, complementary, split, triadic)
+   and a time of day. Every colour on the page is then derived from those hues at set lightness and
+   saturation steps, so faces, floor, water, sky and accents always belong together. */
+const hsl=(h,s,l)=>{h=((h%360)+360)%360/360;const f=n=>{const k=(n+h*12)%12,a=s*Math.min(l,1-l);return l-a*Math.max(-1,Math.min(k-3,9-k,1))};return '#'+[f(0),f(8),f(4)].map(v=>Math.round(v*255).toString(16).padStart(2,'0')).join('')};
+const SCHEME={analogous:40,complementary:180,split:150,triadic:120};
+function harmony({base,scheme,accent,time,motif,shade}){const part=base+(typeof scheme==='number'?scheme:SCHEME[scheme]),acc=accent??(base+180),night=time==='night',dusk=time==='dusk';
+  const face=(h,lo,hi)=>night?{g0:hsl(h,.45,.16),g1:hsl(h,.55,.44),m1:hsl(h,.6,.56),m2:hsl(acc,.75,.6),ln:hsl(acc,.65,.62)}:{g0:hsl(h,.55,lo),g1:hsl(h,.68,hi),m1:hsl(h,.62,hi-.08),m2:hsl(acc,.72,.6),ln:hsl(h,.7,.95)};
+  const sky=night?[hsl(base,.6,.1),hsl(part,.4,.28)]:dusk?[hsl(base,.55,.62),hsl(part,.65,.88)]:[hsl(base,.62,.78),hsl(base,.7,.95)];
+  return {shade,night,sky,haze:sky[1],ghost:night?'rgba(170,170,255,.14)':'rgba(255,255,255,.3)',lines:night?[...hex2rgb(hsl(acc,.65,.62)),.55]:[1,1,1,.55],
+    top:night?{g0:hsl(base,.45,.38),g1:hsl(base,.5,.15),r:5.5,mask:'none',ln:hsl(acc,.6,.6)}:{g0:hsl(base,.7,.97),g1:hsl(base,.5,.86),r:6,mask:'none',ln:'#ffffff'},
+    pz:face(base,.86,.56),px:face(part,.84,.5),motif,water:night?{g0:hsl(part,.55,.36),g1:hsl(part,.6,.16),m1:hsl(acc,.7,.7)}:{g0:hsl(part,.6,.8),g1:hsl(part,.6,.52),m1:hsl(part,.6,.96)}}}
 const PALS={
-  ch1:{shade:'px',sky:['#f4b3c8','#fdeee6'],ghost:'rgba(255,255,255,.3)',haze:'#fdeee6',lines:[1,.97,.95,.55],
-    top:{g0:'#fff6ee',g1:'#f8c9d4',r:6,mask:'none',ln:'#ffffff'},pz:{g0:'#cfc6f2',g1:'#f095b2',m1:'#e07c9f',m2:'#f2c45a',ln:'#ffe6ef'},px:{g0:'#b8d0f6',g1:'#6c7fe2',m1:'#5d6fd2',m2:'#f2c45a',ln:'#e4e9ff'},motif:{pz:'arch',px:'star'},water:{g0:'#9fe0ee',g1:'#5c9ee6',m1:'#effcff'}},
-  ch2:{shade:'pz',sky:['#e7806c','#fde2c8'],ghost:'rgba(255,236,220,.32)',haze:'#fde2c8',lines:[1,.95,.88,.5],
-    top:{g0:'#fff4ea',g1:'#f6c7a6',r:6,mask:'none',ln:'#ffffff'},pz:{g0:'#fbd9c2',g1:'#c2452f',m1:'#e06a4e',m2:'#ffd27a',ln:'#ffe2cc'},px:{g0:'#fbd9c2',g1:'#2b8f8c',m1:'#3fb0a8',m2:'#ffd27a',ln:'#d8f4ef'},motif:{pz:'diaper',px:'diaper'},water:{g0:'#7fd0d8',g1:'#2b8fa8',m1:'#effcff'}},
-  ch3:{shade:'both',sky:['#0c1238','#3a2a6e'],ghost:'rgba(150,140,230,.15)',haze:'#2c2560',lines:[.89,.71,.28,.55],night:true,
-    top:{g0:'#4a63bf',g1:'#141b48',r:5,mask:'none',ln:'#c99a3b'},pz:{g0:'#241d58',g1:'#2f86c2',m1:'#e3b448',m2:'#ffe08a',ln:'#e3b448'},px:{g0:'#241d58',g1:'#1d9a9c',m1:'#e3b448',m2:'#ffe08a',ln:'#e3b448'},motif:{pz:'star',px:'stars'},water:{g0:'#2f5fb8',g1:'#0f2468',m1:'#ffd67a'}},
-  ch4:{shade:'px',sky:['#f2a531','#fde3bd'],ghost:'rgba(255,240,210,.38)',haze:'#fde3bd',lines:[1,.95,.85,.5],
-    top:{g0:'#e9fbf6',g1:'#6fc8bc',r:6.5,mask:'none',ln:'#ffffff'},pz:{g0:'#fbe1c0',g1:'#2c48b0',m1:'#5d7de6',m2:'#f2c45a',ln:'#f2c45a',mask:'diaper'},px:{g0:'#fbe1c0',g1:'#e0582a',m1:'#f39360',m2:'#ffe2a6',ln:'#f2c45a',mask:'diaper'},motif:{pz:'star',px:'arch'},water:{g0:'#5fb4e6',g1:'#1f4fa8',m1:'#d8f2ff'}},
-  ch5:{shade:'pz',sky:['#5b3f9a','#f0c3d6'],ghost:'rgba(255,225,240,.22)',haze:'#efc6d8',lines:[1,.92,.96,.5],
-    top:{g0:'#fff0f6',g1:'#d9a8d6',r:5.5,mask:'none',ln:'#ffffff'},pz:{g0:'#f2cfe0',g1:'#4b2f8f',m1:'#7a5ac6',m2:'#f2c45a',ln:'#f6dcff'},px:{g0:'#f2cfe0',g1:'#d15a8a',m1:'#ef86ad',m2:'#f2c45a',ln:'#ffe1ec'},motif:{pz:'medal',px:'medal'},water:{g0:'#b9c6f6',g1:'#6c78d6',m1:'#ffffff'}},
-  ch6:{shade:'pz',sky:['#df5f86','#fcd6c0'],ghost:'rgba(255,225,232,.3)',haze:'#fcd6c0',lines:[1,.93,.95,.5],
-    top:{g0:'#fff3ee',g1:'#f4b5c6',r:5,mask:'none',ln:'#fff4f6'},pz:{g0:'#f9d0c6',g1:'#8a2a6a',m1:'#b54a8e',m2:'#f2c45a',ln:'#ffd8e8'},px:{g0:'#f9d0c6',g1:'#38379a',m1:'#5b5ac6',m2:'#f2c45a',ln:'#dfe2ff'},motif:{pz:'medal',px:'arch'},water:{g0:'#b9c6f6',g1:'#6c78d6',m1:'#ffffff'}},
-  ch7:{shade:'both',sky:['#081a2e','#25466a'],ghost:'rgba(150,200,230,.14)',haze:'#1f3a5a',lines:[.9,.75,.35,.55],night:true,
-    top:{g0:'#3b6f9a',g1:'#10263e',r:5,mask:'none',ln:'#c99a3b'},pz:{g0:'#13283f',g1:'#3fa0b8',m1:'#e3b448',m2:'#ffe08a',ln:'#e3b448'},px:{g0:'#13283f',g1:'#c99a3b',m1:'#ffe08a',m2:'#ffffff',ln:'#fff0c0'},motif:{pz:'stars',px:'star'},water:{g0:'#3a7fc8',g1:'#0f2a58',m1:'#ffd67a'}},
+  ch1:harmony({base:345,scheme:-45,accent:45,time:'day',shade:'px',motif:{pz:'arch',px:'star'}}),          // rose and orchid, a gold accent: analogous
+  ch2:harmony({base:14,scheme:'complementary',accent:44,time:'dusk',shade:'pz',motif:{pz:'diaper',px:'diaper'}}), // coral and teal: complementary
+  ch3:harmony({base:232,scheme:-40,accent:44,time:'night',shade:'both',motif:{pz:'star',px:'stars'}}),     // indigo and teal, gold: analogous + complement accent
+  ch4:harmony({base:40,scheme:'complementary',accent:200,time:'day',shade:'px',motif:{pz:'star',px:'arch'}}),  // saffron and lapis: complementary
+  ch5:harmony({base:282,scheme:'analogous',accent:48,time:'dusk',shade:'pz',motif:{pz:'medal',px:'medal'}}), // violet and magenta: analogous
+  ch6:harmony({base:330,scheme:-75,accent:45,time:'dusk',shade:'pz',motif:{pz:'medal',px:'arch'}}),          // plum and indigo, gold: analogous
+  ch7:harmony({base:198,scheme:'complementary',accent:40,time:'night',shade:'both',motif:{pz:'stars',px:'star'}}), // night teal and copper: complementary
 };
 const STYLE={};let STYLE_KEY='';
 function buildOneTexture(id){const d=TEXDEFS[id];const c=document.createElement('canvas');c.width=c.height=TS;const g=c.getContext('2d');d.color(g);const D=g.getImageData(0,0,TS,TS).data,out=new Uint8Array(TS*TS*4);
