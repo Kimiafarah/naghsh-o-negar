@@ -88,9 +88,9 @@ const PAL_OPTIONS={
   copper:   {label:'Copper Night',    cols:['#f7e6d6','#dca37c','#9b5b3e','#2c2234'],acc:'#5fc1b4'},
 };
 function fromPal(o,{time,shade,motif}){const [p,l,m,d]=o.cols,acc=o.acc,night=time==='night',dusk=time==='dusk';
-  const sky=night?[mixH(d,'#000000',.4),mixH(d,m,.4)]:dusk?[mixH(l,m,.6),mixH(p,l,.4)]:[l,mixH(p,l,.25)];
+  const sky=night?[mixH(acc,'#000000',.62),mixH(acc,d,.5)]:dusk?[mixH(acc,d,.2),mixH(acc,p,.3)]:[acc,mixH(acc,p,.42)]; // the background is the palette's last colour
   const face=(g0,g1)=>({g0,g1,m1:mixH(g1,d,.22),m2:acc,ln:p});
-  return {shade,night,deep:d,cols:o.cols,acc,sky,haze:sky[1],ghost:night?`rgba(${hx(l).map(v=>Math.round(v*255)).join(',')},.12)`:'rgba(255,255,255,.32)',
+  return {shade,night,deep:d,cols:o.cols,acc,sky,haze:sky[1],ghost:night?`rgba(${hx(p).map(v=>Math.round(v*255)).join(',')},.1)`:'rgba(255,255,255,.26)',
     lines:night?[...hx(acc),.5]:[...hx(p),.6],
     top:night?{g0:mixH(l,m,.4),g1:mixH(m,d,.55),r:5.5,mask:'none',ln:acc}:{g0:p,g1:mixH(p,l,.45),r:6,mask:'none',ln:'#ffffff'},
     pz:night?face(mixH(m,d,.75),mixH(l,m,.6)):face(mixH(l,m,.25),mixH(m,d,.15)),
