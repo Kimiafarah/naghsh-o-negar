@@ -10,7 +10,7 @@ ROOT=pathlib.Path(__file__).resolve().parent.parent
 OUT=str(ROOT/'docs'/'screenshots')+'/'
 GAME=(ROOT/'dist'/'negareh.html').as_uri()
 # route to the first two shards of a chapter (from the playthrough test)
-ROUTES={0:"['1,1,1','2,1,1','1,1,2','-1,2,1','-1,2,0','-1,3,-2','0,3,-2','-1,3,-3',ros(0),'-2,5,-3','-2,5,-4']",
+ROUTES={0:"['3,1,6','2,1,4','1,1,4','1,1,2']",
         1:"['1,2,-2','3,7,1']",
         5:"['2,1,1','1,1,1','0,2,-1','-3,2,-1','-3,2,-2','-2,3,-4','-3,3,-5']",
         6:"['0,1,4','3,2,2','2,2,2']"}
@@ -28,7 +28,7 @@ async def main():
     pg=await b.new_page(viewport={'width':390,'height':780},device_scale_factor=2)
     await pg.goto(GAME,wait_until='domcontentloaded');await pg.wait_for_timeout(3000)
     await pg.screenshot(path=OUT+'_title.png')
-    for li,name in [(0,'courtyard'),(1,'builders'),(5,'seven-pavilions'),(6,'mountain-of-birds')]:
+    for li,name in [(0,'orange-walk'),(1,'builders'),(5,'seven-pavilions'),(6,'mountain-of-birds')]:
       await pg.goto(GAME,wait_until='domcontentloaded');await pg.wait_for_timeout(2000)
       print(name,await pg.evaluate(js(li,ROUTES[li])))
       await pg.wait_for_timeout(4500);await pg.screenshot(path=OUT+'_'+name+'.png')

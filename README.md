@@ -1,15 +1,17 @@
 # Negareh
 
-A Monument Valley–style puzzle game in which Persian miniature paintings become the levels. You play as Mahtab or Pashmak the white cat. Each chapter asks you to gather three shards of a broken cup while avoiding the guards, and with each shard another musician joins the music.
+A Monument Valley–style puzzle game in which Persian miniature paintings become the levels. You play as Mahtab or Pashmak the white cat. Each chapter asks you to gather three shards of a broken cup while avoiding the guards, and with each shard another instrument (santur, glass bells or ney) joins the music.
+
+Every page is painted in one five-colour palette: four tones of one hue for everything you walk on, and a fifth colour for the background.
 
 <p align="center">
-  <img src="docs/screenshots/title.jpg" width="200" alt="Start screen: choose Mahtab or Pashmak, Play Negareh or Tutorial">
-  <img src="docs/screenshots/courtyard.jpg" width="200" alt="Chapter I, The Courtyard: Mahtab climbs past a musician on a floating carpet">
-  <img src="docs/screenshots/builders.jpg" width="200" alt="Chapter II, The Builders: a rose tower at dusk">
+  <img src="docs/screenshots/title.jpg" width="200" alt="Start screen: choose Mahtab or Pashmak, then Play Negareh or Tutorial">
+  <img src="docs/screenshots/orange-walk.jpg" width="200" alt="Chapter I, The Orange Walk: rose terraces and blossom trees on a gold sky">
+  <img src="docs/screenshots/builders.jpg" width="200" alt="Chapter II, The Builders: a pomegranate-red tower on a turquoise sky">
 </p>
 <p align="center">
-  <img src="docs/screenshots/seven-pavilions.jpg" width="200" alt="Chapter VI, The Seven Pavilions: coloured pavilions on blue terraces at dusk">
-  <img src="docs/screenshots/mountain-of-birds.jpg" width="200" alt="Chapter VII, The Mountain of the Birds: a night ascent under the moon">
+  <img src="docs/screenshots/seven-pavilions.jpg" width="200" alt="Chapter VI, The Seven Pavilions: turquoise pavilions on a saffron sky">
+  <img src="docs/screenshots/mountain-of-birds.jpg" width="200" alt="Chapter VII, The Mountain of the Birds: a copper tower under a teal night sky">
   <img src="docs/screenshots/tutorial.jpg" width="200" alt="The tutorial: a gold marker and one line of guidance">
 </p>
 
@@ -35,11 +37,12 @@ To view the game, open `dist/negareh.html` in a browser. The test script needs P
 | `src/engine.js` | WebGL renderer, procedural textures, the geometry builder, palettes |
 | `src/art.js` | Painted pieces: walls, stairs, domes, trees, characters, musicians |
 | `src/shell.html` | Page, HUD, cards (start screen, chapter titles, end screen), CSS |
-| `src/game/01-look.js` | Game-only pieces, chapter palettes, tile patterns |
+| `src/game/01-look.js` | Game-only pieces and tile patterns |
+| `src/game/01b-style.js` | **Chapter palettes** (`PAL_OPTIONS`, `CH_PAL`), gradient block styles, painted tree cards |
 | `src/game/02-levels.js` | **The seven chapters**, the tutorial page and the tutorial steps |
 | `src/game/03-world.js` | Game state, walk graph, level loading, walking, lifts, falling and turning stones |
 | `src/game/04-guards-cat-hud.js` | Guards, the cat guide, lives, gifts, HUD |
-| `src/game/05-sound-music.js` | **Sound and music** (Persian modes, santur, tar, daf, ney layers) |
+| `src/game/05-sound-music.js` | **Sound and music**: each chapter's score in `SCORES` (santur, glass bells, ney; one voice per shard) |
 | `src/game/06-render-camera.js` | Drawing each frame, background, camera director, tutorial marker |
 | `src/game/07-input-flow.js` | Taps, buttons, chapter flow, start-up |
 | `tools/scene-builder.src.html` | The 3D scene builder app |
