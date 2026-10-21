@@ -72,10 +72,10 @@ $('rGirl').onclick=()=>{G.role='girl';syncRole();ensureAudio();pluck(SHUR[4],0,.
 $('rCat').onclick=()=>{G.role='cat';syncRole();ensureAudio();meow()};
 function drawRoleThumbs(){
   let TRr;const c=document.createElement('canvas');c.width=c.height=160;try{TRr=new Renderer(c,{preserve:true})}catch(e){return}
-  const pal=PALETTES.ch1;
+  const key=(G.lvl&&G.lvl.palette)||'ch1',pal=PALETTES[key]||PALETTES.ch1,lock=(PALS[key]||PALS.ch1).lock; // the role pictures use the page's own palette
   for(const [id,list,tgt,zm] of [['cvGirl',[{x:0,y:0,z:0,t:'girl',ang:.785,sc:1.3}],[.5,.42,.5],.5],['cvCat',[{x:0,y:0,z:0,t:'cat',ang:.45,sc:1.35}],[.5,.17,.5],.42]]){
     TRr.setGroups('m',buildGroups(list,pal,'solid'));const cm={az:Math.PI/4,el:Math.atan(1/Math.SQRT2),zoom:zm,target:tgt};const vp=viewProj(cm,1);
-    TRr.begin(160,160);TRr.drawGroups('m',vp.m,{L:lightFor(cm),fog:[1,1,1],fogStart:-9,fogRange:1,mist:0,top:1,time:0});
+    TRr.begin(160,160);TRr.drawGroups('m',vp.m,{L:lightFor(cm),fog:[1,1,1],fogStart:-9,fogRange:1,mist:0,top:1,time:0,lock});
     const g=$(id).getContext('2d');g.clearRect(0,0,160,160);g.drawImage(c,0,0)}
 }
 
@@ -85,9 +85,9 @@ window.__negareh={get coachI(){return G.coachI},COACH,TUT,MUS,G,get P(){return P
 
 function start(data){
   window.addEventListener('resize',resize);
-  if(data&&data.role)G.role=data.role;else{const pr=loadProgress();if(pr&&pr.role)G.role=pr.role}syncRole();drawRoleThumbs();
+  if(data&&data.role)G.role=data.role;else{const pr=loadProgress();if(pr&&pr.role)G.role=pr.role}syncRole();
   const p=loadProgress();if(p&&p.li>0){$('bContinue').hidden=false;$('bContinue').textContent=`Continue · Chapter ${LEVELS[p.li].num}`}
-  loadLevel(data&&typeof data.li==='number'?data.li:0);resize();
+  loadLevel(data&&typeof data.li==='number'?data.li:0);drawRoleThumbs();resize();
   loadCrops().then(()=>{buildTextures();for(const id in TEXDATA)R.addTexture(id,TEXDATA[id])});
   if(data&&typeof data.li==='number'&&data.playing){$('cardIntro').hidden=true;G.totalGold=data.gold||0;openPage(data.li,true)}
   const wake=()=>{ensureAudio();if(ac){musicStart(G.li);if(ac.state==='running'){removeEventListener('pointerdown',wake,true);removeEventListener('keydown',wake,true)}}};
