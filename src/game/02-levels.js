@@ -95,7 +95,7 @@ const LEVELS=[
   rotators:[{pivot:[-1,0,1],arm:[[0,1]],piece:'deck',f:'arabesque',states:[1,2]}],
   rosettes:[{pos:[-2,1,1],target:['rotator',0]}],
   fallers:[],
-  guards:[{type:'watch',at:[1,1,-2],dirs:[[-1,0],[0,1]],interval:2.4}],
+  guards:[{type:'watch',at:[1,1,-2],dirs:[[-1,0],[0,1],[1,0],[0,1]],interval:2.4}],
 },
 {
   num:'V',name:'The Hanging Garden',palette:'ch5',wall:'wall_teal',line:'A garden above the clouds.',tip:'',

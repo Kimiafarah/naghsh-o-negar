@@ -68,23 +68,45 @@ function cardGeoFor(w,h,T,el){const g=new Geo();const k=1/Math.cos(el)*.82,r=[Ma
 for(const [k,[fn,w,h]] of Object.entries(TREE_CARDS))PIECE_BY_ID['card_'+k]={id:'card_'+k,slot:6,geo:cardGeoFor(w,h,'c_'+k,Math.atan(1/Math.SQRT2))};
 const CARD_TEX=new Set(Object.keys(TREE_CARDS).map(k=>'c_'+k));
 
-/* ---------- chapter palettes: 2–3 main colours + one accent, each wing its own ---------- */
-const PALS={
-  ch1:{sky:['#f4b3c8','#fdeee6'],ghost:'rgba(255,255,255,.3)',haze:'#fdeee6',lines:[1,.97,.95,.55],
-    top:{g0:'#fff6ee',g1:'#f8c9d4',r:6,mask:'hexline',ln:'#ffffff'},pz:{g0:'#cfc6f2',g1:'#f095b2',m1:'#e07c9f',m2:'#f2c45a',ln:'#ffe6ef'},px:{g0:'#b8d0f6',g1:'#6c7fe2',m1:'#5d6fd2',m2:'#f2c45a',ln:'#e4e9ff'},motif:{pz:'arch',px:'star'},water:{g0:'#9fe0ee',g1:'#5c9ee6',m1:'#effcff'}},
-  ch2:{sky:['#e7806c','#fde2c8'],ghost:'rgba(255,236,220,.32)',haze:'#fde2c8',lines:[1,.95,.88,.5],
-    top:{g0:'#fff4ea',g1:'#f6c7a6',r:6,mask:'hexline',ln:'#ffffff'},pz:{g0:'#fbd9c2',g1:'#c2452f',m1:'#e06a4e',m2:'#ffd27a',ln:'#ffe2cc'},px:{g0:'#fbd9c2',g1:'#2b8f8c',m1:'#3fb0a8',m2:'#ffd27a',ln:'#d8f4ef'},motif:{pz:'diaper',px:'diaper'},water:{g0:'#7fd0d8',g1:'#2b8fa8',m1:'#effcff'}},
-  ch3:{sky:['#0c1238','#3a2a6e'],ghost:'rgba(150,140,230,.15)',haze:'#2c2560',lines:[.89,.71,.28,.55],night:true,
-    top:{g0:'#4a63bf',g1:'#141b48',r:5,mask:'hexline',ln:'#c99a3b'},pz:{g0:'#241d58',g1:'#2f86c2',m1:'#e3b448',m2:'#ffe08a',ln:'#e3b448'},px:{g0:'#241d58',g1:'#1d9a9c',m1:'#e3b448',m2:'#ffe08a',ln:'#e3b448'},motif:{pz:'star',px:'stars'},water:{g0:'#2f5fb8',g1:'#0f2468',m1:'#ffd67a'}},
-  ch4:{sky:['#f2a531','#fde3bd'],ghost:'rgba(255,240,210,.38)',haze:'#fde3bd',lines:[1,.95,.85,.5],
-    top:{g0:'#e9fbf6',g1:'#6fc8bc',r:6.5,mask:'hexline',ln:'#ffffff'},pz:{g0:'#fbe1c0',g1:'#2c48b0',m1:'#5d7de6',m2:'#f2c45a',ln:'#f2c45a',mask:'diaper'},px:{g0:'#fbe1c0',g1:'#e0582a',m1:'#f39360',m2:'#ffe2a6',ln:'#f2c45a',mask:'diaper'},motif:{pz:'star',px:'arch'},water:{g0:'#5fb4e6',g1:'#1f4fa8',m1:'#d8f2ff'}},
-  ch5:{sky:['#5b3f9a','#f0c3d6'],ghost:'rgba(255,225,240,.22)',haze:'#efc6d8',lines:[1,.92,.96,.5],
-    top:{g0:'#fff0f6',g1:'#d9a8d6',r:5.5,mask:'hexline',ln:'#ffffff'},pz:{g0:'#f2cfe0',g1:'#4b2f8f',m1:'#7a5ac6',m2:'#f2c45a',ln:'#f6dcff'},px:{g0:'#f2cfe0',g1:'#d15a8a',m1:'#ef86ad',m2:'#f2c45a',ln:'#ffe1ec'},motif:{pz:'medal',px:'medal'},water:{g0:'#b9c6f6',g1:'#6c78d6',m1:'#ffffff'}},
-  ch6:{sky:['#df5f86','#fcd6c0'],ghost:'rgba(255,225,232,.3)',haze:'#fcd6c0',lines:[1,.93,.95,.5],
-    top:{g0:'#fff3ee',g1:'#f4b5c6',r:5,mask:'hexline',ln:'#fff4f6'},pz:{g0:'#f9d0c6',g1:'#8a2a6a',m1:'#b54a8e',m2:'#f2c45a',ln:'#ffd8e8'},px:{g0:'#f9d0c6',g1:'#38379a',m1:'#5b5ac6',m2:'#f2c45a',ln:'#dfe2ff'},motif:{pz:'medal',px:'arch'},water:{g0:'#b9c6f6',g1:'#6c78d6',m1:'#ffffff'}},
-  ch7:{sky:['#081a2e','#25466a'],ghost:'rgba(150,200,230,.14)',haze:'#1f3a5a',lines:[.9,.75,.35,.55],night:true,
-    top:{g0:'#3b6f9a',g1:'#10263e',r:5,mask:'hexline',ln:'#c99a3b'},pz:{g0:'#13283f',g1:'#3fa0b8',m1:'#e3b448',m2:'#ffe08a',ln:'#e3b448'},px:{g0:'#13283f',g1:'#c99a3b',m1:'#ffe08a',m2:'#ffffff',ln:'#fff0c0'},motif:{pz:'stars',px:'star'},water:{g0:'#3a7fc8',g1:'#0f2a58',m1:'#ffd67a'}},
+/* ---------- chapter palettes, built from colour harmony ----------
+   Each chapter names a base hue, how its partner hue relates (analogous, complementary, split, triadic)
+   and a time of day. Every colour on the page is then derived from those hues at set lightness and
+   saturation steps, so faces, floor, water, sky and accents always belong together. */
+const hsl=(h,s,l)=>{h=((h%360)+360)%360/360;const f=n=>{const k=(n+h*12)%12,a=s*Math.min(l,1-l);return l-a*Math.max(-1,Math.min(k-3,9-k,1))};return '#'+[f(0),f(8),f(4)].map(v=>Math.round(v*255).toString(16).padStart(2,'0')).join('')};
+const SCHEME={analogous:40,complementary:180,split:150,triadic:120};
+const mixH=(a,b,t)=>'#'+hx(a).map((v,i)=>Math.round((v+(hx(b)[i]-v)*t)*255).toString(16).padStart(2,'0')).join('');
+/* One palette per page: four tones of one family (pale, light, mid, deep) and a single accent.
+   Blocks, sky, water, props, carpets, windows and trees are all mapped onto these five colours. */
+const PAL_OPTIONS={
+  rose:     {label:'Rose Garden',     cols:['#fdf0ec','#f4c3bd','#d7848b','#6e2f4f'],acc:'#e9b04c'},
+  turquoise:{label:'Turquoise Dome',  cols:['#effaf6','#b4e3d8','#4fa7a0','#1d4a5a'],acc:'#f2a63c'},
+  lapis:    {label:'Lapis Night',     cols:['#e8ebf8','#a3aee0','#4b5aa8','#1b2257'],acc:'#f2c45a'},
+  saffron:  {label:'Saffron Court',   cols:['#fff5e2','#f6d49c','#dd9a4a','#7c4224'],acc:'#3d5fae'},
+  pomegranate:{label:'Pomegranate Dusk',cols:['#fdebe2','#f2b49b','#c75a45','#561e2c'],acc:'#4cb3a6'},
+  pistachio:{label:'Pistachio',       cols:['#f4f7e6','#d3e2ab','#8eaa5e','#3d5631'],acc:'#e27c8c'},
+  lilac:    {label:'Lilac Evening',   cols:['#f6effa','#d9c6ec','#9677c6','#3f2b68'],acc:'#f0b850'},
+  copper:   {label:'Copper Night',    cols:['#f7e6d6','#dca37c','#9b5b3e','#2c2234'],acc:'#5fc1b4'},
 };
+function fromPal(o,{time,shade,motif}){const [p,l,m,d]=o.cols,acc=o.acc,night=time==='night',dusk=time==='dusk';
+  const sky=night?[mixH(acc,'#000000',.42),mixH(acc,'#000000',.12)]:dusk?[mixH(acc,d,.2),mixH(acc,p,.3)]:[acc,mixH(acc,p,.42)]; // the background is the palette's last colour
+  const face=(g0,g1)=>({g0,g1,m1:mixH(g1,d,.22),m2:acc,ln:p});
+  return {shade,night,deep:d,cols:o.cols,acc,sky,haze:sky[1],ghost:night?`rgba(${hx(p).map(v=>Math.round(v*255)).join(',')},.1)`:'rgba(255,255,255,.26)',
+    lines:night?[...hx(acc),.5]:[...hx(p),.6],
+    top:night?{g0:mixH(l,m,.4),g1:mixH(m,d,.55),r:5.5,mask:'none',ln:acc}:{g0:p,g1:mixH(p,l,.45),r:6,mask:'none',ln:'#ffffff'},
+    pz:night?face(mixH(m,d,.75),mixH(l,m,.6)):face(mixH(l,m,.25),mixH(m,d,.15)),
+    px:night?face(mixH(d,'#000000',.2),mixH(m,d,.35)):face(mixH(l,m,.7),mixH(m,d,.6)),
+    motif,water:night?{g0:mixH(m,d,.4),g1:mixH(d,'#000000',.25),m1:acc}:{g0:mixH(l,m,.5),g1:mixH(m,d,.6),m1:p},
+    lock:{r:[p,l,m,d].map(hx),acc:hx(acc)}}}
+const CH_PAL={ // which palette each page uses, and its light
+  ch1:['rose',     {time:'day',  shade:'px',  motif:{pz:'arch',px:'star'}}],
+  ch2:['pomegranate',{time:'dusk',shade:'pz', motif:{pz:'diaper',px:'diaper'}}],
+  ch3:['lapis',    {time:'night',shade:'both',motif:{pz:'star',px:'stars'}}],
+  ch4:['saffron',  {time:'day',  shade:'px',  motif:{pz:'star',px:'arch'}}],
+  ch5:['lilac',    {time:'dusk', shade:'pz',  motif:{pz:'medal',px:'medal'}}],
+  ch6:['turquoise',{time:'day',  shade:'pz',  motif:{pz:'medal',px:'arch'}}],
+  ch7:['copper',   {time:'night',shade:'both',motif:{pz:'stars',px:'star'}}],
+};
+const PALS=new Proxy({},{get:(_,k)=>{const c=CH_PAL[k];if(!c)return undefined;const o=PAL_OPTIONS[(window.__palOverride)||c[0]];return fromPal(o,c[1])}});
 const STYLE={};let STYLE_KEY='';
 function buildOneTexture(id){const d=TEXDEFS[id];const c=document.createElement('canvas');c.width=c.height=TS;const g=c.getContext('2d');d.color(g);const D=g.getImageData(0,0,TS,TS).data,out=new Uint8Array(TS*TS*4);
   for(let y=0;y<TS;y++){const s=y*TS*4,t=(TS-1-y)*TS*4;for(let x=0;x<TS*4;x+=4){out[t+x]=D[s+x];out[t+x+1]=D[s+x+1];out[t+x+2]=D[s+x+2];out[t+x+3]=255}}return out}
@@ -94,7 +116,10 @@ function styl(id,mask,s){if(!TEXDEFS[id]||TEXDEFS[id].mask_!==mask){TEXDEFS[id]=
 function applyStyle(key,bounds){const P=PALS[key]||PALS.ch1;const y0=bounds.min[1]-.5,y1=bounds.max[1]+.5,cx=(bounds.min[0]+bounds.max[0])/2,cz=(bounds.min[2]+bounds.max[2])/2;
   const gy=[y0,y1],side=s=>({...s,gy});
   styl('t_top',P.top.mask,{...P.top,mode:2,gc:[cx,0,cz],gy:[0,P.top.r],m1:P.top.ln,m2:P.top.ln});
-  for(const sd of ['pz','px']){const S=side(P[sd]);styl('t_'+sd,S.mask||'none',S);styl('t_'+sd+'B','band',S);styl('t_'+sd+'M',P.motif[sd],S)}
+  const dk=(h,k)=>{const c=hx(h),sh=hx(P.deep).map(v=>v*(P.night?.5:1.2));return '#'+c.map((v,i)=>Math.round(Math.max(0,Math.min(1,v*(1-k)+sh[i]*k*.55))*255).toString(16).padStart(2,'0')).join('')};
+  const shadeOf=sd=>P.shade==='both'?(sd==='px'?.34:.22):P.shade===sd?.3:0;
+  for(const sd of ['pz','px']){const k=shadeOf(sd),S0=side(P[sd]),S=k?{...S0,g0:dk(S0.g0,k),g1:dk(S0.g1,k),m1:S0.m1&&dk(S0.m1,k),m2:S0.m2&&dk(S0.m2,k*.6),ln:S0.ln&&dk(S0.ln,k*.5)}:S0;
+    styl('t_'+sd,S.mask||'none',S);styl('t_'+sd+'B','band',S);styl('t_'+sd+'M',P.motif[sd],S)}
   styl('t_water','water',{...P.water,gdir:[.7,0,.7],gy:[cx+cz-8,cx+cz+8]});
   styl('t_road','road',{mode:2,g0:P.top.g0,g1:P.top.g1,gc:[cx,0,cz],gy:[0,P.top.r],m1:P.pz.g1,m2:P.pz.g1,ln:P.px.g1});
   for(const id in TEXDEFS)if(TEXDEFS[id].dirty){R.addTexture(id,buildOneTexture(id));TEXDEFS[id].dirty=false}

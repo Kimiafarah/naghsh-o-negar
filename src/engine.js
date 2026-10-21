@@ -388,6 +388,11 @@ varying vec3 vPos;varying vec3 vN;varying vec3 vCol;varying vec2 vUV;varying flo
 uniform vec3 uL;uniform vec3 uFog;uniform float uFogStart;uniform float uFogRange;uniform float uMist;
 uniform float uAlpha;uniform vec3 uTint;uniform float uTintAmt;uniform float uWater;uniform float uTime;uniform float uTop;
 uniform sampler2D uTex;uniform float uUseTex;uniform float uFlat;uniform float uCut;uniform vec2 uScroll;uniform float uMode;uniform vec3 uG0;uniform vec3 uG1;uniform vec2 uGy;uniform vec3 uGdir;uniform vec3 uGc;uniform vec3 uM1;uniform vec3 uM2;uniform vec3 uLn;
+uniform float uLock;uniform vec3 uR0;uniform vec3 uR1;uniform vec3 uR2;uniform vec3 uR3;uniform vec3 uAcc;
+vec3 lockC(vec3 c){float l=dot(c,vec3(0.299,0.587,0.114));float t=clamp((l-0.14)/0.74,0.0,1.0)*3.0;
+  vec3 r=t<1.0?mix(uR3,uR2,t):t<2.0?mix(uR2,uR1,t-1.0):mix(uR1,uR0,t-2.0);
+  float w=smoothstep(0.25,0.45,c.r-c.b)*smoothstep(0.08,0.22,c.g-c.b)*smoothstep(0.5,0.7,c.r);
+  return mix(r,uAcc*(0.85+0.3*l),w);}
 void main(){
   vec3 n=normalize(vN);
   vec3 base=vCol;
@@ -395,7 +400,9 @@ void main(){
     if(uMode>0.5){float k;if(uMode<1.5)k=(dot(vPos,uGdir)-uGy.x)/(uGy.y-uGy.x);else k=distance(vPos.xz,uGc.xz)/uGy.y;k=clamp(k,0.0,1.0);k=k*k*(3.0-2.0*k);
       vec3 bg=mix(uG0,uG1,k);base=mix(bg,uM1,t.r);base=mix(base,uM2,t.g);base=mix(base,uLn,t.b);}
     else if(uCut>0.5){if(t.a<0.5)discard;base=t.rgb;}
-    else base=mix(vCol*t.rgb*1.12,t.rgb,t.a);}
+    else base=mix(vCol*t.rgb*1.12,t.rgb,t.a);
+    if(uMode<0.5&&uLock>0.5)base=lockC(base);}
+  else if(uLock>0.5)base=lockC(base);
   float d=max(dot(n,uL),0.0);
   float s=uFlat>0.5?1.0:0.6+0.4*d;
   vec3 c=base*s;
@@ -461,7 +468,8 @@ class Renderer{
     gl.uniform1f(P.u.uFogStart,U.fogStart);gl.uniform1f(P.u.uFogRange,U.fogRange);gl.uniform1f(P.u.uMist,U.mist);gl.uniform1f(P.u.uTop,U.top);
     gl.uniform1f(P.u.uTime,U.time);gl.uniform1f(P.u.uAlpha,o.alpha??1);gl.uniform3fv(P.u.uTint,o.tint||[0,0,0]);gl.uniform1f(P.u.uTintAmt,o.tintAmt||0);
     gl.uniform1f(P.u.uWater,o.water?1:0);{const u=P.u,S=o.style;gl.uniform1f(u.uFlat??null,o.flat?1:0);gl.uniform1f(u.uCut??null,o.cut?1:0);gl.uniform2fv(u.uScroll??null,o.scroll||[0,0]);
-      gl.uniform1f(u.uMode??null,S?S.mode:0);if(S){gl.uniform3fv(u.uG0??null,S.g0);gl.uniform3fv(u.uG1??null,S.g1);gl.uniform2fv(u.uGy??null,S.gy);gl.uniform3fv(u.uGdir??null,S.gdir);gl.uniform3fv(u.uGc??null,S.gc);gl.uniform3fv(u.uM1??null,S.m1);gl.uniform3fv(u.uM2??null,S.m2);gl.uniform3fv(u.uLn??null,S.ln)}}gl.uniform3fv(P.u.uPivot,o.pivot||[0,0,0]);gl.uniform1f(P.u.uScale,o.scale||1);
+      gl.uniform1f(u.uMode??null,S?S.mode:0);if(S){gl.uniform3fv(u.uG0??null,S.g0);gl.uniform3fv(u.uG1??null,S.g1);gl.uniform2fv(u.uGy??null,S.gy);gl.uniform3fv(u.uGdir??null,S.gdir);gl.uniform3fv(u.uGc??null,S.gc);gl.uniform3fv(u.uM1??null,S.m1);gl.uniform3fv(u.uM2??null,S.m2);gl.uniform3fv(u.uLn??null,S.ln)}
+      const Lk=U.lock;gl.uniform1f(u.uLock??null,Lk&&!o.nolock?1:0);if(Lk){gl.uniform3fv(u.uR0??null,Lk.r[0]);gl.uniform3fv(u.uR1??null,Lk.r[1]);gl.uniform3fv(u.uR2??null,Lk.r[2]);gl.uniform3fv(u.uR3??null,Lk.r[3]);gl.uniform3fv(u.uAcc??null,Lk.acc)}}gl.uniform3fv(P.u.uPivot,o.pivot||[0,0,0]);gl.uniform1f(P.u.uScale,o.scale||1);
     gl.depthMask(o.depthWrite!==false);
     if(o.offset){gl.enable(gl.POLYGON_OFFSET_FILL);gl.polygonOffset(-1,-2)}
     gl.drawArrays(gl.TRIANGLES,0,m.count);

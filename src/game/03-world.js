@@ -60,7 +60,7 @@ function loadLevel(i){
   G.guards=L.guards.map(g=>{
     if(g.type==='patrol'){const path=g.path.map(c=>K(...c));const p0=nodeCenter(path[0]);
       return {...g,speed:g.speed*.6,pathK:path,i:0,dir:1,pos:[...p0],to:1,t:0,wait:0,facing:dirBetween(path[0],path[1]),ang:0,vision:[]}}
-    const p0=[g.at[0]+.5,g.at[1],g.at[2]+.5];return {...g,interval:g.interval*1.35,pos:p0,di:0,timer:g.interval*1.35,facing:g.dirs[0],ang:0,vision:[]};
+    const p0=[g.at[0]+.5,g.at[1],g.at[2]+.5],dirs=g.dirs.length===2?[g.dirs[0],g.dirs[1],g.dirs[1]]:g.dirs;return {...g,dirs,interval:g.interval*1.2,pos:p0,di:0,timer:g.interval*1.2,facing:dirs[0],ang:0,vision:[]};
   });
   // static meshes
   const pal=PALETTES[L.palette],list=[...S.values()];
@@ -95,7 +95,7 @@ function dirBetween(a,b){const [ax,,az]=a.split(',').map(Number),[bx,,bz]=b.spli
 /* =========================================================
    Agents (Mahtab and the cat)
    ========================================================= */
-const WALK_SPEED=.85;   // tiles a second at cruise; starts and stops are eased (see the design doc's calm checklist)
+const WALK_SPEED=1.35;   // tiles a second at cruise; starts and stops are eased (see the design doc's calm checklist)
 function agentStep(a,dt,isPlayer,avoid){
   if(a.riding)return;
   if(a.to===null&&a.path.length&&avoid&&avoid.has(a.path[0])){a.wait=(a.wait||0)+dt;if(a.wait>.7){a.wait=0;a.path=[];a.goal=null;G.catDirty=true}return}

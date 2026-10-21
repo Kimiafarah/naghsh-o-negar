@@ -29,6 +29,7 @@ function drawBG(){
   for(let k=0;k<3;k++){g.beginPath();const y0=h*(.2+k*.15),amp=16,ph=k*1.7+G.li;g.moveTo(0,y0);for(let x=0;x<=w;x+=8)g.lineTo(x,y0+Math.sin(x/w*Math.PI*2+ph)*amp);for(let x=w;x>=0;x-=8)g.lineTo(x,y0+12+Math.sin(x/w*Math.PI*2+ph+.6)*amp*1.2);g.closePath();
     g.fillStyle=P_.night?'rgba(160,150,255,.06)':'rgba(255,255,255,.15)';g.fill()}
   const de=document.documentElement.style;de.setProperty('--sky-top',P_.sky[0]);de.setProperty('--sky-bot',P_.sky[1]);de.setProperty('--haze',P_.haze);
+  if(P_.cols){const [p,,m,d]=P_.cols;de.setProperty('--lapis-deep',d);de.setProperty('--lapis',mixH(m,d,.5));de.setProperty('--gold',P_.acc);de.setProperty('--gold-hi',mixH(P_.acc,p,.45));de.setProperty('--ivory',p)}
 }
 function fitView(){
   const {right,up}=camBasis({az:cam.azT,el:cam.el});const ck=cam.azT.toFixed(3)+'|'+W+'x'+H;
@@ -90,7 +91,7 @@ function render(now){
   VPinfo=viewProj(cam,W/Math.max(1,H));
   {const ring=$('coachRing'),c=G.tut&&G.mode==='play'?COACH[G.coachI]:null;if(c){const [sx,sy]=project(c.at());ring.style.transform=`translate(${sx.toFixed(1)}px,${sy.toFixed(1)}px)`}
    if(ring.hidden===!!c)ring.hidden=!c}
-  const U={L:lightFor(cam),fog:hex2rgb(pal.fog||pal.sky[1]),fogStart:G.bounds.min[1]+1.4,fogRange:2.6,mist:.85,top:Math.max(1,G.bounds.max[1]-G.bounds.min[1]),time:reduce?0:G.time};
+  const U={L:lightFor(cam),fog:hex2rgb(pal.fog||pal.sky[1]),fogStart:G.bounds.min[1]+1.4,fogRange:2.6,mist:.85,top:Math.max(1,G.bounds.max[1]-G.bounds.min[1]),time:reduce?0:G.time,lock:G.P&&G.P.lock};
   R.begin(W,H);
   drawKeyed('static',U);if(G.P)R.drawLines('rim',VPinfo.m,G.P.lines);
   // living parts
