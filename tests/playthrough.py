@@ -16,13 +16,13 @@ GAME = (pathlib.Path(__file__).resolve().parent.parent / 'dist' / 'negareh.html'
 CHAPTERS_JS = r"""
 (()=>{const N=window.__negareh;const log=[];
 let close=0,frames=0,minD=9;const sim=(sec,until)=>{for(let i=0;i<sec*60;i++){N.tick(1/60);frames++;const P=N.P,C=N.CAT;if(C.fade>.5&&!C.hidden&&Math.abs(P.pos[1]-C.pos[1])<.5){const d=Math.hypot(P.pos[0]-C.pos[0],P.pos[2]-C.pos[2]);minD=Math.min(minD,d);if(d<.35){close++;if(close%5==1)log.push('   near P '+P.from+'>'+P.to+' r'+!!P.riding+' C '+C.from+'>'+C.to+' r'+!!C.riding+' d'+d.toFixed(2))}}if(until&&until())return true}return !!(until&&until())};
-const go=(k,sec=20)=>{const ok=N.walkTo(k);if(!ok){log.push('  NO PATH to '+k+' from '+N.P.from);return false}const r=sim(sec,()=>N.P.from===k&&N.P.to===null);if(!r)log.push('  TIMEOUT '+k);return r};
+const go=(k,sec=40)=>{for(let a=0;a<5;a++){if(N.walkTo(k)&&sim(sec,()=>N.P.from===k&&N.P.to===null))return true;sim(3)}log.push('  NOT REACHED '+k+' from '+N.P.from);return false}; // moving platforms may need a second try, as a player would
 const run=(li,steps)=>{N.openPage(li,true);document.getElementById('cardPage').hidden=true;N.G.guards.length=0;
   for(const s of steps){if(typeof s==='string')go(s);else s()}
   log.push('L'+li+' overlapFrames '+close+' minDist '+minD.toFixed(2)+' |');close=0;minD=9;log.push('L'+li+' shards '+N.G.shardsGot+' gate '+N.G.gateOpen+' mode '+N.G.mode+' gold '+N.G.levelGold+'/'+N.G.coins.length)};
 const ros=i=>()=>{N.triggerRosette(N.G.rosettes[i]);sim(2.6)};
 const waitMover=(i,idx)=>()=>{const m=N.G.movers[i];const r=sim(20,()=>!m.moving&&m.idx===idx);if(!r)log.push('  mover '+i+' never at '+idx)};
-run(0,['1,1,1','2,1,1','1,1,2','-1,2,1','-1,2,0','-1,3,-2','0,3,-2','-1,3,-3',ros(0),'-2,5,-3','-2,5,-4','-4,6,-4','-4,6,-5']);
+run(0,['3,1,6','2,1,4','1,1,4','1,1,2','2,1,1','3,1,0','2,2,-2','1,2,-2','3,2,-2','2,2,-3']);
 run(1,['1,2,-2','3,7,1','2,7,2',waitMover(0,1),'-1,9,0','0,9,1','1,9,0','2,9,0']);
 run(2,[ros(0),'0,2,1','2,2,0',ros(1),'1,3,-1','4,3,-2',ros(2),'0,4,-3','1,4,-4','0,4,-4']);
 run(3,['1,1,1','2,1,1','1,1,2','-1,1,1',ros(0),'-1,1,-1','0,1,-2','-3,2,-3','-2,2,-3',waitMover(0,0),'-1,2,-3',waitMover(0,1),'-1,5,-4','-2,5,-4','-2,5,-5']);
@@ -36,7 +36,7 @@ return log.join('\n')})()
 TUTORIAL_JS = r"""
 (()=>{const N=window.__negareh,G=N.G,log=[];
 const sim=(sec,until)=>{for(let i=0;i<sec*60;i++){N.tick(1/60);if(until&&until())return true}return !!(until&&until())};
-const go=(k,sec=20)=>{const ok=N.walkTo(k);if(!ok){log.push('NO PATH '+k+' from '+N.P.from);return}sim(sec,()=>N.P.from===k&&N.P.to===null);log.push(k+' coach '+N.coachI+' shards '+G.shardsGot+' gold '+G.levelGold+' danger '+!!G.danger+' mode '+G.mode)};
+const go=(k,sec=40)=>{const ok=N.walkTo(k);if(!ok){log.push('NO PATH '+k+' from '+N.P.from);return}sim(sec,()=>N.P.from===k&&N.P.to===null);log.push(k+' coach '+N.coachI+' shards '+G.shardsGot+' gold '+G.levelGold+' danger '+!!G.danger+' mode '+G.mode)};
 document.getElementById('bLearn').click();sim(1);log.push('start coach '+N.coachI+' text '+document.getElementById('coachText').textContent+' tut '+G.tut);
 go('1,1,2');go('2,1,1');go('-1,2,1');go('-1,2,0');
 N.triggerRosette(G.rosettes[0]);sim(2.5);log.push('after star coach '+N.coachI+' mover idx '+G.movers[0].idx);

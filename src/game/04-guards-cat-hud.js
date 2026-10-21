@@ -18,13 +18,14 @@ function updateMovers(dt){
     if(m.t>=1){m.idx=m.toIdx;m.moving=false;m.timer=m.wait||0;m.pos=[...m.stops[m.idx]];rebuildGraph();
       const topK=K(m.stops[m.idx][0],m.stops[m.idx][1]+1,m.stops[m.idx][2]);
       for(const ag of [P,CAT])if(ag.riding&&ag.riding.m===m){ag.riding=null;ag.from=topK;ag.pos=nodeCenter(topK);if(ag===P)onPlayerArrive(topK)}
-      pluck(SHUR[0]/2,0,.06,.5);if(ac&&MUS.out)dum(ac.currentTime+.01,.2)}
+      lockIn()}
   }
 }
+function lockIn(){pluck(SHUR[0]/2,0,.07,.7);if(ac&&MUS.out)dum(ac.currentTime+.01,.18);try{navigator.vibrate&&navigator.vibrate(12)}catch(e){}}
 function updateFallers(dt){
   for(const f of G.fallers){
     f.t+=dt;const topK=K(f.x,f.y+1,f.z);
-    if(f.state==='shake'&&f.t>.85){f.state='fall';f.t=0;rebuildGraph();pluck(SHUR[1]/2,0,.08,.6);
+    if(f.state==='shake'&&f.t>1.2){f.state='fall';f.t=0;rebuildGraph();pluck(SHUR[1]/2,0,.08,.6);
       const onIt=(P.from===topK&&(P.to===null||P.t<.5));if(onIt&&G.mode==='play'){P.path=[];P.to=null;P.falling={f,y0:P.pos[1]};caught('fall')}
       if(CAT.from===topK)teleportCat()}
     else if(f.state==='fall'&&f.t>1.4){f.state='gone';f.t=0}
@@ -44,8 +45,8 @@ function triggerRosette(r){
     shot(ro.states.flatMap(st=>rotCells(ro,st)).concat([ro.pivot]).flatMap(c=>[[c[0]+.5,c[1]+1.3,c[2]+.5],[c[0]+.5,c[1],c[2]+.5]]),1.7)}
 }
 function updateRotators(dt){
-  for(const r of G.rotators){if(!r.anim)continue;r.anim.t=Math.min(1,r.anim.t+dt/.9);const e=r.anim.t<.5?4*r.anim.t**3:1-Math.pow(-2*r.anim.t+2,3)/2;
-    r.ang=(r.anim.from+(r.anim.to-r.anim.from)*e)*Math.PI/2;if(r.anim.t>=1){r.state=r.anim.to;r.ang=r.state*Math.PI/2;r.anim=null;rebuildGraph()}}
+  for(const r of G.rotators){if(!r.anim)continue;r.anim.t=Math.min(1,r.anim.t+dt/1.5);const e=r.anim.t<.5?4*r.anim.t**3:1-Math.pow(-2*r.anim.t+2,3)/2;
+    r.ang=(r.anim.from+(r.anim.to-r.anim.from)*e)*Math.PI/2;if(r.anim.t>=1){r.state=r.anim.to;r.ang=r.state*Math.PI/2;r.anim=null;rebuildGraph();lockIn()}}
 }
 
 /* =========================================================

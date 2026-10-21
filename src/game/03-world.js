@@ -46,7 +46,7 @@ function loadLevel(i){
   L.build(put,fill);
   for(const r of L.rotators)put(...r.pivot,'block',{c:4});
   G.static=S;
-  G.movers=L.movers.map(m=>({...m,idx:0,pos:[...m.stops[0]],moving:false,t:0,timer:m.wait||0}));
+  G.movers=L.movers.map(m=>({...m,speed:m.speed*.65,wait:(m.wait||0)*2,idx:0,pos:[...m.stops[0]],moving:false,t:0,timer:m.wait||0}));
   G.fallers=L.fallers.map(([x,y,z])=>({x,y,z,state:'idle',t:0}));
   G.rotators=L.rotators.map(r=>({...r,state:r.states[0],anim:null,ang:r.states[0]*Math.PI/2}));
   G.rosettes=L.rosettes.map(r=>({...r,pulse:0}));
@@ -55,23 +55,26 @@ function loadLevel(i){
   G.gifts=(L.gifts||[]).map(([x,y,z,kind])=>({c:[x,y,z],kind,open:false,t:0}));G.crowdT=[];
   G.gate=L.gate;G.gateOpen=false;G.doorY=0;G.shardsGot=0;G.levelGold=0;G.hintPath=[];G.hintT=0;
   rebuildGraph();
-  P=mkAgent(L.start,2.7);CAT=mkAgent(L.cat,2.4);CAT.goal=null;
+  P=mkAgent(L.start,WALK_SPEED);CAT=mkAgent(L.cat,WALK_SPEED*1.08);CAT.goal=null;
   G.checkpoint=K(...L.start);
   G.guards=L.guards.map(g=>{
     if(g.type==='patrol'){const path=g.path.map(c=>K(...c));const p0=nodeCenter(path[0]);
-      return {...g,pathK:path,i:0,dir:1,pos:[...p0],to:1,t:0,wait:0,facing:dirBetween(path[0],path[1]),ang:0,vision:[]}}
-    const p0=[g.at[0]+.5,g.at[1],g.at[2]+.5];return {...g,pos:p0,di:0,timer:g.interval,facing:g.dirs[0],ang:0,vision:[]};
+      return {...g,speed:g.speed*.6,pathK:path,i:0,dir:1,pos:[...p0],to:1,t:0,wait:0,facing:dirBetween(path[0],path[1]),ang:0,vision:[]}}
+    const p0=[g.at[0]+.5,g.at[1],g.at[2]+.5];return {...g,interval:g.interval*1.35,pos:p0,di:0,timer:g.interval*1.35,facing:g.dirs[0],ang:0,vision:[]};
   });
   // static meshes
   const pal=PALETTES[L.palette],list=[...S.values()];
   const VIS={stair:'stair2',cypress:'cypress2',orange:'orange2',blossom:'blossom2',tree:'pomegranate',vase:'pot'},VSC={cypress2:1.15,orange2:1,blossom2:1.05,pomegranate:1,pot:1.3};
-  const vis=q=>{if(q.t==='block'&&q.c===0)return {...q,t:(((q.x+q.z)%2)+2)%2?'wblockp':'wblock',f:L.wall};const t=VIS[q.t];return t?{...q,t,sc:q.sc||VSC[t]}:q};
-  R.setGroups('static',buildGroups(list.map(vis),pal,'solid',null,S));R.setGroups('staticW',buildGroups(list,pal,'water',S));
+  const vis=q=>{const sq=styledPiece(q,S);if(sq!==q)return sq;const t=VIS[q.t];return t?{...q,t,sc:q.sc||VSC[t]}:q};
+  G.cards=list.filter(q=>TREE_TYPES.has(q.t)).map(q=>({x:q.x,y:q.y,z:q.z,t:q.t,sc:(q.sc||1)*(.92+((q.x*3+q.z*5)%5+5)%5*.04)}));
   let mn=[1e9,1e9,1e9],mx=[-1e9,-1e9,-1e9];for(const q of list){if(q.t==='cloud')continue;for(let k=0;k<3;k++){mn[k]=Math.min(mn[k],[q.x,q.y,q.z][k]);mx[k]=Math.max(mx[k],[q.x,q.y,q.z][k]+1)}}
   const ext=c=>{for(let k=0;k<3;k++){mn[k]=Math.min(mn[k],c[k]);mx[k]=Math.max(mx[k],c[k]+1)}};
   for(const m of L.movers)for(const st of m.stops)ext(st);for(const f of L.fallers)ext(f);
   for(const r of L.rotators)for(const stt of r.states){const sv=r.state;for(const c of rotCells({...r},stt))ext(c)}
   G.bounds={min:mn,max:mx};
+  G.P=applyStyle(L.palette,G.bounds);
+  {const vl=list.filter(q=>!TREE_TYPES.has(q.t)).map(vis);R.setGroups('static',buildGroups(vl,pal,'solid',null,S));R.setGroups('staticW',buildGroups(list.filter(q=>q.t!=='water'),pal,'water',S));
+   R.setMesh('rim',{pos:rimLines(vl,camBasis({az:Math.PI/4,el:Math.atan(1/Math.SQRT2)}).back)})}
   const cells=[...list.filter(q=>q.t!=='fall'),...L.movers.flatMap(m=>m.stops.map(([x,y,z])=>({x,y,z}))),...L.fallers.map(([x,y,z])=>({x,y,z})),
     ...L.rotators.flatMap(r=>r.states.flatMap(st=>rotCells(r,st).map(([x,y,z])=>({x,y,z}))))];
   {let u0=1e9,u1=-1e9;for(const q of cells){const u=(q.x-q.z)/Math.SQRT2;u0=Math.min(u0,u);u1=Math.max(u1,u+1.4)}
@@ -92,6 +95,7 @@ function dirBetween(a,b){const [ax,,az]=a.split(',').map(Number),[bx,,bz]=b.spli
 /* =========================================================
    Agents (Mahtab and the cat)
    ========================================================= */
+const WALK_SPEED=.85;   // tiles a second at cruise; starts and stops are eased (see the design doc's calm checklist)
 function agentStep(a,dt,isPlayer,avoid){
   if(a.riding)return;
   if(a.to===null&&a.path.length&&avoid&&avoid.has(a.path[0])){a.wait=(a.wait||0)+dt;if(a.wait>.7){a.wait=0;a.path=[];a.goal=null;G.catDirty=true}return}
@@ -101,13 +105,15 @@ function agentStep(a,dt,isPlayer,avoid){
     if(G.nodes.has(a.from)){a.to=a.from;a.fromPos=[...a.pos];a.toPos=nodeCenter(a.from);a.t=0;a.path=[]}else{a.to=null;return}
   }
   const d=Math.hypot(a.toPos[0]-a.fromPos[0],a.toPos[1]-a.fromPos[1],a.toPos[2]-a.fromPos[2])||.01;
-  a.t=Math.min(1,a.t+a.speed*dt/d);
+  if(!a.walking){a.walking=true;a.walked=0}const remain=(1-a.t)*d+a.path.length;
+  const v=a.speed*Math.max(.28,Math.min(1,.28+a.walked/.8,.28+remain/.9));a.walked+=v*dt;a.v=v;
+  a.t=Math.min(1,a.t+v*dt/d);
   for(let k=0;k<3;k++)a.pos[k]=a.fromPos[k]+(a.toPos[k]-a.fromPos[k])*a.t;
   const dx=a.toPos[0]-a.fromPos[0],dz=a.toPos[2]-a.fromPos[2];if(Math.abs(dx)+Math.abs(dz)>.01)a.face=[dx,dz];
-  const ph=a.phase;a.phase+=dt*12;if(isPlayer&&Math.floor(a.phase/Math.PI)!==Math.floor(ph/Math.PI))stepSound();
-  if(a.t>=1){a.from=a.to;a.to=null;a.pos=[...a.toPos];if(isPlayer)onPlayerArrive(a.from)}
+  const ph=a.phase;a.phase+=dt*7*(v/Math.max(.01,a.speed));if(isPlayer&&Math.floor(a.phase/Math.PI)!==Math.floor(ph/Math.PI))stepSound();
+  if(a.t>=1){a.from=a.to;a.to=null;a.pos=[...a.toPos];if(!a.path.length)a.walking=false;if(isPlayer)onPlayerArrive(a.from)}
 }
-function turnToward(a,dt,off=0){if(!a.face)return;const want=Math.atan2(a.face[0],a.face[1])+off;let d=want-a.ang;while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;a.ang+=d*Math.min(1,dt*12)}
+function turnToward(a,dt,off=0){if(!a.face)return;const want=Math.atan2(a.face[0],a.face[1])+off;let d=want-a.ang;while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;a.ang+=d*Math.min(1,dt*6)}
 function playerCell(){const x=Math.floor(P.pos[0]),z=Math.floor(P.pos[2]);const y=G.nodes.get(P.to&&P.t>.5?P.to:P.from)?.y??Math.round(P.pos[1]);return [x,y,z]}
 
 function onPlayerArrive(k){
